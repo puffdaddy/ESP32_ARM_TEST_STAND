@@ -20,6 +20,7 @@
 #define PWM2_PIN 33
 
 // I2C addresses
+#define SSD1306_I2C_ADDRESS 0x3C  // I2C address for the OLED display
 #define INA228_ADDR1 0x40
 #define INA228_ADDR2 0x41
 
@@ -187,7 +188,7 @@ void handleWebSocketMessage(uint8_t num, uint8_t *payload, size_t len) {
     String message = (char*)payload;
 
     if (message.indexOf("test") >= 0) {
-        DynamicJsonDocument doc(1024);
+        JsonDocument doc(1024);
         deserializeJson(doc, message);
         String testType = doc["test"];
         startTest(testType);
@@ -216,6 +217,7 @@ void onEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
             break;
     }
 }
+
 
 void startTest(String testType) {
     Serial.println("Starting test: " + testType);
@@ -298,7 +300,7 @@ void sendData() {
     float avgCurrent = (current1 + current2) / 2.0;
 
     // Prepare JSON data
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc(1024);
     doc["voltage"] = avgVoltage;
     doc["current"] = avgCurrent;
 
