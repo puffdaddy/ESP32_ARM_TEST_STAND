@@ -10,7 +10,6 @@
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 
-
 // Hardware definitions
 #define DHTPIN 4
 #define DHTTYPE DHT11
