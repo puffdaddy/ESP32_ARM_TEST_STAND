@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorTester3000</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, black, darkred);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .button {
+            background-color: orange;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: darkorange;
+        }
+        .form-group {
+            margin: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: grey;
+        }
+        .progress {
+            width: 0;
+            height: 30px;
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>MOTOR TESTER 3000 is loading...</h1>
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+    <script>
+        var elem = document.getElementById('progress');
+        var width = 0;
+        var id = setInterval(frame, 50);
+        function frame() {
+            if (width >= 100) {
+                clearInterval(id);
+                window.location.href = "/form";
+            } else {
+                width++;
+                elem.style.width = width + '%';
+            }
+        }
+    </script>
+</body>
+</html>

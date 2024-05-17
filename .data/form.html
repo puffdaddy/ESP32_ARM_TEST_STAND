@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorTester3000 - Form</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, black, darkred);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .button {
+            background-color: orange;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: darkorange;
+        }
+        .form-group {
+            margin: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Please fill out the following information</h1>
+    <form action="/submit" method="POST">
+        <div class="form-group">
+            <label for="armSerialNumber">Arm Serial Number:</label>
+            <input type="text" id="armSerialNumber" name="armSerialNumber" required>
+        </div>
+        <div class="form-group">
+            <label for="currentHours">Current Hours:</label>
+            <input type="number" step="0.1" id="currentHours" name="currentHours" required>
+        </div>
+        <div class="form-group">
+            <label for="operatorName">Operator Name:</label>
+            <input type="text" id="operatorName" name="operatorName" required>
+        </div>
+        <button type="submit" class="button">Submit</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorTester3000 - Review</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, black, darkred);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .button {
+            background-color: orange;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: darkorange;
+        }
+        .display {
+            font-size: 32px;
+            margin: 20px;
+        }
+        canvas {
+            background-color: black;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>MotorTester3000 - Test Review</h1>
+    <canvas id="voltageGraph"></canvas>
+    <canvas id="currentGraph"></canvas>
+    <a href="/download" class="button">Download Log File</a>
+    <button class="button" onclick="location.href='/'">Done</button>
+    <script>
+        var voltageData = {
+            labels: [],
+            datasets: [{
+                label: 'Voltage',
+                borderColor: 'red',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                data: []
+            }]
+        };
+
+        var currentData = {
+            labels: [],
+            datasets: [{
+                label: 'Current',
+                borderColor: 'red',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                data: []
+            }]
+        };
+
+        var voltageConfig = {
+            type: 'line',
+            data: voltageData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Time' } },
+                    y: { display: true, title: { display: true, text: 'Voltage (V)' } }
+                }
+            }
+        };
+
+        var currentConfig = {
+            type: 'line',
+            data: currentData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Time' } },
+                    y: { display: true, title: { display: true, text: 'Current (A)' } }
+                }
+            }
+        };
+
+        var voltageChart = new Chart(
+            document.getElementById('voltageGraph'),
+            voltageConfig
+        );
+
+        var currentChart = new Chart(
+            document.getElementById('currentGraph'),
+            currentConfig
+        );
+
+        function fetchData() {
+            fetch('/download')
+                .then(response => response.text())
+                .then(data => {
+                    const lines = data.split('\n');
+                    lines.forEach((line, index) => {
+                        if (line) {
+                            const [voltage, current] = line.split(',');
+                            const time = index.toString();
+                            voltageData.labels.push(time);
+                            voltageData.datasets[0].data.push(parseFloat(voltage));
+                            currentData.labels.push(time);
+                            currentData.datasets[0].data.push(parseFloat(current));
+                        }
+                    });
+                    voltageChart.update();
+                    currentChart.update();
+                });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>

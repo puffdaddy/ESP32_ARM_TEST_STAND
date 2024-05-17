@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorTester3000 - Test</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, black, darkred);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .button {
+            background-color: orange;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: darkorange;
+        }
+        .display {
+            font-size: 32px;
+            margin: 20px;
+        }
+        #voltage, #current {
+            display: inline-block;
+            width: 45%;
+        }
+        canvas {
+            background-color: black;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>MotorTester3000</h1>
+    <div>
+        <button class="button" onclick="startTest('full')">Full Test</button>
+        <button class="button" onclick="startTest('motor1')">Motor 1 Test</button>
+        <button class="button" onclick="startTest('motor2')">Motor 2 Test</button>
+    </div>
+    <div id="voltage" class="display">Voltage: <span id="voltageValue">0</span> V</div>
+    <div id="current" class="display">Current: <span id="currentValue">0</span> A</div>
+    <canvas id="voltageGraph"></canvas>
+    <canvas id="currentGraph"></canvas>
+    <div id="terminal" style="display:none;"></div>
+    <script>
+        var voltageData = {
+            labels: [],
+            datasets: [{
+                label: 'Voltage',
+                borderColor: 'red',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                data: []
+            }]
+        };
+
+        var currentData = {
+            labels: [],
+            datasets: [{
+                label: 'Current',
+                borderColor: 'red',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                data: []
+            }]
+        };
+
+        var voltageConfig = {
+            type: 'line',
+            data: voltageData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Time' } },
+                    y: { display: true, title: { display: true, text: 'Voltage (V)' } }
+                }
+            }
+        };
+
+        var currentConfig = {
+            type: 'line',
+            data: currentData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Time' } },
+                    y: { display: true, title: { display: true, text: 'Current (A)' } }
+                }
+            }
+        };
+
+        var voltageChart = new Chart(
+            document.getElementById('voltageGraph'),
+            voltageConfig
+        );
+
+        var currentChart = new Chart(
+            document.getElementById('currentGraph'),
+            currentConfig
+        );
+
+        var ws = new WebSocket('ws://' + window.location.host + '/ws');
+        ws.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            document.getElementById('voltageValue').innerText = data.voltage.toFixed(2);
+            document.getElementById('currentValue').innerText = data.current.toFixed(2);
+
+            var time = new Date().toLocaleTimeString();
+            voltageData.labels.push(time);
+            voltageData.datasets[0].data.push(data.voltage);
+            voltageChart.update();
+
+            currentData.labels.push(time);
+            currentData.datasets[0].data.push(data.current);
+            currentChart.update();
+        };
+
+        function startTest(testType) {
+            ws.send(JSON.stringify({ test: testType }));
+        }
+    </script>
+</body>
+</html>

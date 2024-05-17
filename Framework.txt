@@ -1,0 +1,43 @@
+I need a code to do the following.
+
+The code will be to test a twin motor arm from a drone. This arm has 2 motors on it that will need to be tested both seperately and together. Here is more details on the project and what i would like it to be able to do
+
+I would like to include the following hardware in the project. 
+- The ESP32dev board will be used as the primary component of the project.
+    - I am also going to be using the following hardware in this project
+        - INA228 chips at address 0x40 and 0x41 over I2C
+        - A 1.3 inch oled display over I2C on the normal address that they come shipped with.
+        - a 3 pin dht11 sensors
+        - I want to have GPIO outputs as well for triggering 2 seperate relays. one that will trigger when the the buttons are pressed to start a test. That will turn on a warning light to warn others to stay away, and then after 5 seconds the test can begin. The other pin may be used later, but i would like to have it provisioned for already.
+
+        
+- I also want to use two adafruit INA228 chips on board that will be tied to shunt resistors with a value of 3mOhms.
+- I want this ESP32 to act as an access point and generate a wifi hotspot for the operator of the device to connect to, The ssid should be "MotorTester3000" and the password should be "test1234"
+- I want the ESP32 to host a website at 192.168.4.1 and i want that website to do the following.
+- I want this website to first bring the user to a landing page that has "MOTOR TESTER 3000 is loading..." and a progress bar underneath that text that loads over a period of 5 seconds. 
+    - next i want that website to take the user to another page that has text at the top center that says Please fill out the following information.
+        - Under that i want multiple text input fields for the user to enter the following, "Arm Serial Number", "Current Hours", "Operator Name".
+    -I want the user to have to enter those fields before proceeding to hit the submit button. I also want the field for Current Hours to be a number with decimal point being allowed. 
+    - Once the operator is able to enter all of the information. i want that information stored somewhere in the code so that it can be retrieved later to add into the log file.
+    - I want the next page that the user it taken to to have a test screen that looks like this...
+        - I want the title to be "MotorTester3000" and then underneath that 3 buttons that will allow for 3 different tests to be executed.
+        - the buttons will be for a "full test" "Motor 1 Test", and "Motor 2 Test"
+        - Under those buttons i want the data from the INA228 chips to be displayed in real time in the following ways.
+            - On the left side of the screen i want a digital 7 segment display style in red of the readout of the voltage averaged from both of the INA228 sensors. 
+            - On the right side i want the same style as the voltage readout, but for the averaged current reading from the sensors.
+            - Under each of those readouts of data, i want a live graph that is plotting the data in realtime from the sensors at a rate of 10hz and plotting it on a graph over time with the time being equal to the total run time of the test that is being conducted.
+            - Underneath that i want a terminal window with the print data of the terminal displayed so that i can see the debug terminal for the ESP32 to debug errors and monitor the progress of the test. I want the ability to quickly turn this feature on or off in the code as it will be there for me, but not the end user.
+        - When the test starts i also want to log all of the data from the sensors to a log file that has a title composed of the user entered information of serial number, hours, and the operators name. I would like to use NCAP to log this data so that it can later be integrated easier into ros2.
+        - Once the test is completed, the log file should be stopped and the next web page should appear. 
+        - This next web page should include the graphs from the previous test in a larger format to review, and if possible, the ability to replay the test data from the log in real time for the operator to review would be great. 
+        - On this same page i would like to have an option for the log file of the test that was just conducted to be downloaded throught he web browser to the operators computer. 
+        - When the operator is done, they should have a button on the bottom of the page next to the download log button that says "Done" and when that is pressed, it takes them back to the first web page to restart the process.
+    - I want this website to have a black to dark red gradient background with orange buttons that change color when they are hovered over. I want the general text to be white unless specified somewhere else. For the graphs, i want them to be black background with white everything else. The plot lines shoudl be red, and the graph should display values for voltage and current on the left side of the graphs respectively.
+- The motors that are being tested will be controlled via PWM, So i need 2 pins allocated for that. 
+    - the PWM values need to be able to be adjusted easily so that i can mess around with that to get what i want once the rest of the code is working properly.
+
+
+I want everything in this code to be annotated, and have debug output that can be used to see how the program is running.
+I want this to be a platform.io project inside of VScode. The language is up to you, but i have been learning C++ a little bit, so i would like to try to use that unless you think that there is a better option.
+I am not a programmer, so i need the project outline, a description of what the project does, and the documentation in a readme for others to be able to work on this code. 
+Can you do all of that?
