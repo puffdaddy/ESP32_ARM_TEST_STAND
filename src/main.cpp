@@ -9,6 +9,7 @@
 #include <AsyncTCP.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
+#include <Adafruit_Sensor.h>
 
 // Hardware definitions
 #define DHTPIN 4
@@ -21,9 +22,12 @@
 // I2C addresses
 #define INA228_ADDR1 0x40
 #define INA228_ADDR2 0x41
+
+// OLED display instance
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-#define OLED_RESET    -1
+#define OLED_RESET    -1  // Use -1 if sharing Arduino reset pin
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Wi-Fi credentials
 const char *ssid = "MotorTester3000";
@@ -32,9 +36,6 @@ const char *password = "test1234";
 // INA228 instances
 Adafruit_INA228 ina228_1 = Adafruit_INA228();
 Adafruit_INA228 ina228_2 = Adafruit_INA228();
-
-// OLED display instance
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // DHT sensor instance
 DHT dht(DHTPIN, DHTTYPE);
@@ -62,7 +63,7 @@ bool isLogging = false;
 void initHardware();
 void initWebServer();
 void handleFormSubmit(AsyncWebServerRequest *request);
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
+void handleWebSocketMessage(uint8_t num, uint8_t *payload, size_t len);
 void onEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 void startTest(String testType);
 void stopTest();
@@ -181,18 +182,15 @@ void handleFormSubmit(AsyncWebServerRequest *request) {
     }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-    AwsFrameInfo *info = (AwsFrameInfo*)arg;
-    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-        data[len] = 0;
-        String message = (char*)data;
+void handleWebSocketMessage(uint8_t num, uint8_t *payload, size_t len) {
+    payload[len] = 0;  // Null-terminate the string
+    String message = (char*)payload;
 
-        if (message.indexOf("test") >= 0) {
-            JsonDocument doc;
-            deserializeJson(doc, message);
-            String testType = doc["test"];
-            startTest(testType);
-        }
+    if (message.indexOf("test") >= 0) {
+        DynamicJsonDocument doc(1024);
+        deserializeJson(doc, message);
+        String testType = doc["test"];
+        startTest(testType);
     }
 }
 
@@ -207,7 +205,14 @@ void onEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
             break;
         }
         case WStype_TEXT:
-            handleWebSocketMessage(payload, length);
+            handleWebSocketMessage(num, payload, length);
+            break;
+        case WStype_BIN:
+        case WStype_ERROR:
+        case WStype_FRAGMENT_TEXT_START:
+        case WStype_FRAGMENT_BIN_START:
+        case WStype_FRAGMENT:
+        case WStype_FRAGMENT_FIN:
             break;
     }
 }
@@ -293,7 +298,7 @@ void sendData() {
     float avgCurrent = (current1 + current2) / 2.0;
 
     // Prepare JSON data
-    JsonDocument doc;
+    DynamicJsonDocument doc(1024);
     doc["voltage"] = avgVoltage;
     doc["current"] = avgCurrent;
 
