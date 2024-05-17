@@ -21,6 +21,9 @@
 // I2C addresses
 #define INA228_ADDR1 0x40
 #define INA228_ADDR2 0x41
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
 
 // Wi-Fi credentials
 const char *ssid = "MotorTester3000";
@@ -31,7 +34,7 @@ Adafruit_INA228 ina228_1 = Adafruit_INA228();
 Adafruit_INA228 ina228_2 = Adafruit_INA228();
 
 // OLED display instance
-Adafruit_SSD1306 display(128, 64, &Wire);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // DHT sensor instance
 DHT dht(DHTPIN, DHTTYPE);
@@ -60,7 +63,7 @@ void initHardware();
 void initWebServer();
 void handleFormSubmit(AsyncWebServerRequest *request);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+void onEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 void startTest(String testType);
 void stopTest();
 void logData();
@@ -185,7 +188,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         String message = (char*)data;
 
         if (message.indexOf("test") >= 0) {
-            DynamicJsonDocument doc(1024);
+            JsonDocument doc;
             deserializeJson(doc, message);
             String testType = doc["test"];
             startTest(testType);
@@ -193,19 +196,18 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     }
 }
 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+void onEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
     switch (type) {
-        case WS_EVT_CONNECT:
-            Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        case WStype_DISCONNECTED:
+            Serial.printf("[%u] Disconnected!\n", num);
             break;
-        case WS_EVT_DISCONNECT:
-            Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        case WStype_CONNECTED: {
+            IPAddress ip = webSocket.remoteIP(num);
+            Serial.printf("[%u] Connected from %s\n", num, ip.toString().c_str());
             break;
-        case WS_EVT_DATA:
-            handleWebSocketMessage(arg, data, len);
-            break;
-        case WS_EVT_PONG:
-        case WS_EVT_ERROR:
+        }
+        case WStype_TEXT:
+            handleWebSocketMessage(payload, length);
             break;
     }
 }
@@ -291,7 +293,7 @@ void sendData() {
     float avgCurrent = (current1 + current2) / 2.0;
 
     // Prepare JSON data
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     doc["voltage"] = avgVoltage;
     doc["current"] = avgCurrent;
 
@@ -312,5 +314,5 @@ void handleDownload(AsyncWebServerRequest *request) {
     }
 
     String fileName = "/" + armSerialNumber + "_" + currentHours + "_" + operatorName + ".csv";
-    request->send(SPIFFS, fileName, "text/csv", true, "testdata.csv");
+    request->send(SPIFFS, fileName, "text/csv", true);
 }
