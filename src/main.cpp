@@ -188,7 +188,7 @@ void handleWebSocketMessage(uint8_t num, uint8_t *payload, size_t len) {
     String message = (char*)payload;
 
     if (message.indexOf("test") >= 0) {
-        JsonDocument doc(1024);
+        StaticJsonDocument<1024> doc;
         deserializeJson(doc, message);
         String testType = doc["test"];
         startTest(testType);
@@ -300,7 +300,7 @@ void sendData() {
     float avgCurrent = (current1 + current2) / 2.0;
 
     // Prepare JSON data
-    JsonDocument doc(1024);
+    StaticJsonDocument<1024> doc;
     doc["voltage"] = avgVoltage;
     doc["current"] = avgCurrent;
 
