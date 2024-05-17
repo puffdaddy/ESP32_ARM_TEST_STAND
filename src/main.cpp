@@ -2,7 +2,6 @@
 #include <Wire.h>
 #include <Adafruit_INA228.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include <DHT.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
@@ -10,6 +9,8 @@
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 #include <Adafruit_Sensor.h>
+#include <Adafruit_SH110X.h>
+
 
 // Hardware definitions
 #define DHTPIN 4
@@ -28,7 +29,8 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1  // Use -1 if sharing Arduino reset pin
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
 
 // Wi-Fi credentials
 const char *ssid = "MotorTester3000";
@@ -81,6 +83,14 @@ void setup() {
     // Initialize hardware
     initHardware();
 
+    // Test the OLED display
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SH110X_WHITE);
+    display.setCursor(0, 0);
+    display.println(F("Hello, World!"));
+    display.display();
+
     // Initialize web server
     initWebServer();
 
@@ -90,6 +100,7 @@ void setup() {
 
     Serial.println("Setup complete.");
 }
+
 
 void loop() {
     webSocket.loop();
@@ -112,9 +123,16 @@ void initHardware() {
 
     // Initialize OLED display
     if (!display.begin(SSD1306_I2C_ADDRESS, OLED_RESET)) {
-        Serial.println(F("SSD1306 allocation failed"));
+        Serial.println(F("SH1106 allocation failed"));
         for (;;);
     }
+    display.display();
+    delay(2000);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SH110X_WHITE);
+    display.setCursor(0, 0);
+    display.println(F("Display Initialized"));
     display.display();
     delay(2000);
     display.clearDisplay();
@@ -138,6 +156,7 @@ void initHardware() {
         return;
     }
 }
+
 
 void initWebServer() {
     // Connect to Wi-Fi
